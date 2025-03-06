@@ -1,35 +1,52 @@
 "use client";
 
+import useAuth from "@/hook/useAuth";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+// Fetch chat history
+const fetchChatHistory = async (userEmail) => {
+  try {
+    const response = await fetch(`/api/chat-history?userEmail=${userEmail}`);
+    if (!response.ok) throw new Error("Failed to fetch chat history");
+    return await response.json(); // This returns the full data array
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    return []; // Return an empty array if there's an error
+  }
+};
 
 const ChatHistoryPage = () => {
+  const [user] = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [history, setHistory] = useState([
-    {
-      id: 1,
-      title: "Chat with John Doe",
-      lastUpdated: "2023-03-05 12:45 PM",
-    },
-    {
-      id: 2,
-      title: "Chat with Alice",
-      lastUpdated: "2023-03-06 03:30 PM",
-    },
-    {
-      id: 3,
-      title: "Chat with Bob",
-      lastUpdated: "2023-03-07 01:15 PM",
-    },
-  ]);
+  const [history, setHistory] = useState([]); // Now history is an array
+  const [loading, setLoading] = useState(true);
 
-  // Filter the chat history based on the search query
-  const filteredHistory = history.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Memoize fetching the chat history
+  const getChatHistory = useCallback(async () => {
+    if (!user?.email) return;
 
+    setLoading(true);
+    const data = await fetchChatHistory(user.email);
+    console.log(data); // Log the full response for debugging
+    setHistory(data); // Set the full response directly to history
+    setLoading(false);
+  }, [user?.email]);
+
+  // Fetch chat history on user change or component mount
+  useEffect(() => {
+    if (user?.email) {
+      getChatHistory();
+    }
+  }, [user?.email, getChatHistory]);
+
+  // Filtered history based on search query
+  const filteredHistory = [];
+
+  console.log(history.length);
+  // Handle deletion (simulated in this example, modify it for backend deletion)
   const handleDelete = (id) => {
-    setHistory(history.filter((item) => item.id !== id));
+    // setHistory(history.filter((item) => item._id !== id)); // Remove chat from UI (backend deletion not implemented)
   };
 
   return (
@@ -45,20 +62,23 @@ const ChatHistoryPage = () => {
         />
       </div>
 
+      {/* Loading Indicator */}
+      {loading && <p className="text-center text-gray-500">Loading...</p>}
+
       {/* Chat History Cards */}
-      {filteredHistory.length === 0 ? (
+      {filteredHistory.length === 0 && !loading ? (
         <p className="text-center text-gray-500">No chat history found.</p>
       ) : (
         filteredHistory.map((item) => (
           <div
-            key={item.id}
+            key={item._id}
             className="flex justify-between items-center bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-all"
           >
-            <Link href={`/?id=${item.id}`}>
+            <Link href={`/chat/${item._id}`}>
               {/* Left Side - Logo and Title */}
               <div className="flex items-center space-x-4">
                 <img
-                  src='https://www.codester.com/static/uploads/items/000/026/26069/icon.png'
+                  src="https://www.codester.com/static/uploads/items/000/026/26069/icon.png"
                   alt="Logo"
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -66,13 +86,14 @@ const ChatHistoryPage = () => {
                   <p className="text-base font-semibold text-gray-700">
                     {item.title}
                   </p>
-                  <p className="text-xs text-gray-500">{item.lastUpdated}</p>
+                  <p className="text-xs text-gray-500">{item.timestamp}</p>
                 </div>
               </div>
             </Link>
+
             {/* Right Side - Delete Button */}
             <button
-              onClick={() => handleDelete(item.id)}
+              onClick={() => handleDelete(item._id)}
               className="text-red-500 cursor-pointer hover:text-red-700 transition-all"
             >
               <svg

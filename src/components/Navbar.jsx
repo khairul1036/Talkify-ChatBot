@@ -49,7 +49,7 @@ const Navbar = () => {
         ) : (
           <Link
             href="/api/auth/login"
-            className="text-sm md:text-base text-white hover:bg-blue-600 bg-blue-500 rounded-lg px-4 py-2"
+            className="text-sm md:text-base text-white hover:bg-indigo-600 bg-indigo-500 rounded-lg px-5 py-3"
           >
             Login
           </Link>
