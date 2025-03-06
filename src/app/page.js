@@ -4,7 +4,7 @@ import logo from "../app/logo.png";
 export default function Home() {
   return (
     <>
-    <Chat logo={logo}/>
+      <Chat logo={logo} />
     </>
   );
 }

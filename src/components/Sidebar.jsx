@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import useAuth from "@/hook/useAuth";
 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [user] = useAuth();
 
   return (
     <>
@@ -66,7 +69,7 @@ const Sidebar = () => {
               <span className="ml-4">New Chat</span>
             </Link>
             <Link
-              href={'/history'}
+              href={"/history"}
               className="flex items-center text-white hover:bg-indigo-800 p-2 rounded transition-colors"
             >
               <svg
@@ -85,6 +88,27 @@ const Sidebar = () => {
               </svg>
               <span className="ml-4">History</span>
             </Link>
+
+            {user && (
+              <LogoutLink className="flex items-center px-2 py-2 mt-2 bg-white text-gray-900 rounded hover:bg-gray-100 transition-colors cursor-pointer">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 16l4-4-4-4"></path>
+                  <path d="M7 12H3"></path>
+                  <path d="M16 12H7"></path>
+                </svg>
+                <span className="ml-4">Logout</span>
+              </LogoutLink>
+            )}
           </nav>
         </div>
       </div>
